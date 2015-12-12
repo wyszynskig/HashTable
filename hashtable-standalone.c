@@ -1,7 +1,7 @@
 /* Hash table by Grzegorz Wyszynski
  * Stand-alone C-only tool version
  * email: wyszynskig@gmail.com           */
-
+/* more info on python extension: https://docs.python.org/3.4/extending/newtypes.html */
 
 
 #include <stdlib.h>
