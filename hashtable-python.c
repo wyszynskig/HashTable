@@ -55,24 +55,29 @@ HashTable_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
 	int nBasket,size;
 	hashtable * self;
-	if (!PyArg_ParseTuple(args, "i",&size)) {
-	    return NULL;
+	self = (hashtable *)type->tp_alloc(type, 0);
+	if (self != NULL)
+	{
+		if (!PyArg_ParseTuple(args, "i",&size)) {
+		    return NULL;
+		}
+		if( size < 1 ) return NULL; 
+		self=NULL;
+		/* Allocate the hashtable */
+		if( ( self = malloc( sizeof( hashtable ) ) ) == NULL ) { /* error-proofing */
+			return NULL;
+		}
+		/* Allocate pointers to the head nodes. */
+		if( ( self->basket = malloc( sizeof( list * ) * size ) ) == NULL ) {
+			return NULL;
+		}
+		for( nBasket = 0; nBasket < size; nBasket++ ) {
+			self->basket[nBasket] = NULL;
+		}
+		self->size = size;
+		printf("%i\n",self->size);
 	}
-	if( size < 1 ) return NULL; 
-	self=NULL;
-	/* Allocate the hashtable */
-	if( ( self = malloc( sizeof( hashtable ) ) ) == NULL ) { /* error-proofing */
-		return NULL;
-	}
-	/* Allocate pointers to the head nodes. */
-	if( ( self->basket = malloc( sizeof( list * ) * size ) ) == NULL ) {
-		return NULL;
-	}
-	for( nBasket = 0; nBasket < size; nBasket++ ) {
-		self->basket[nBasket] = NULL;
-	}
-	self->size = size;
-	printf("%i\n",self->size);
+	printf("DONE Creating new HashTable\n");
 	return (PyObject *)self;	
 }
 
