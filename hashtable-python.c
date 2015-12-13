@@ -64,7 +64,6 @@ HashTable_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 	if( ( output = malloc( sizeof( hashtable ) ) ) == NULL ) { /* error-proofing */
 		return NULL;
 	}
-
 	/* Allocate pointers to the head nodes. */
 	if( ( output->basket = malloc( sizeof( list * ) * size ) ) == NULL ) {
 		return NULL;
@@ -75,6 +74,7 @@ HashTable_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 
 	output->size = size;
 
+	printf("!welcome\n");
 	return (PyObject *)output;	
 }
 
@@ -126,6 +126,7 @@ int AddValueToHashtable(hashtable * self, PyObject *args)
 	list * current;
 	char * index;
 	char * value;
+	printf("We are in AddValueToHashtable\n");
 	if (! PyArg_ParseTuple(args, "ss",&index, &value))
 		return -1;
 	hashvalue = GetStringHash(index, self->size);
