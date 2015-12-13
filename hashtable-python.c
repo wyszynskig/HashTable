@@ -1,7 +1,7 @@
 /* Hash table by Grzegorz Wyszynski
- * Python interface
- * email: wyszynskig@gmail.com           */
-/* more info on python extension: https://docs.python.org/3.4/extending/newtypes.html */
+ * Python module realization
+ * version 0.1 not-working
+*/
 #include <Python.h>
 #include <structmember.h>
 #include <stdlib.h>
@@ -49,35 +49,32 @@ int GetStringHash(char* value, int sizeOfHashtable)
 	printf("%i\n",output % sizeOfHashtable);
 	return output % sizeOfHashtable;
 }
-/* Initialize Hashtable */
+/* Create new Hashtable */
 static PyObject *
 HashTable_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
 	int nBasket,size;
-	hashtable * output= NULL;
+	hashtable * self;
 	if (!PyArg_ParseTuple(args, "i",&size)) {
 	    return NULL;
 	}
-	if( size < 1 ) return NULL;
-	
+	if( size < 1 ) return NULL; 
+	self=NULL;
 	/* Allocate the hashtable */
-	if( ( output = malloc( sizeof( hashtable ) ) ) == NULL ) { /* error-proofing */
+	if( ( self = malloc( sizeof( hashtable ) ) ) == NULL ) { /* error-proofing */
 		return NULL;
 	}
 	/* Allocate pointers to the head nodes. */
-	if( ( output->basket = malloc( sizeof( list * ) * size ) ) == NULL ) {
+	if( ( self->basket = malloc( sizeof( list * ) * size ) ) == NULL ) {
 		return NULL;
 	}
 	for( nBasket = 0; nBasket < size; nBasket++ ) {
-		output->basket[nBasket] = NULL;
+		self->basket[nBasket] = NULL;
 	}
-
-	output->size = size;
-
-	printf("!welcome\n");
-	return (PyObject *)output;	
+	self->size = size;
+	printf("%i\n",self->size);
+	return (PyObject *)self;	
 }
-
 
 /* Destroy hashtable */
 static void DestroyHashtable(hashtable * input)
@@ -99,27 +96,6 @@ static void DestroyHashtable(hashtable * input)
 	return;
 }
 
-int AddValueToEntry(char * index, char * value, list * basket)
-{
-	while(basket!=NULL)
-		if (!strcmp(basket->index,index)) /* If the index does not much current entry */
-		{
-			basket=basket->next;      /* Proceed through the list until we find the last entry */
-		}
-		else						       /* Otherwise update the value */
-		{
-			free(basket->value);
-			basket->value = strdup(value);
-			return 1;
-		}
-	if ((basket = malloc(sizeof(list))) == NULL) /* Allocate the */
-		return 0;
-	basket->index = strdup(index);  /* Adding index */
-	basket->value = strdup(value);  /* And value */
-	basket->next = NULL;	
-	return 1;	
-}
-
 int AddValueToHashtable(hashtable * self, PyObject *args)
 {
 	int hashvalue; /* Hash for "value" string */
@@ -127,6 +103,7 @@ int AddValueToHashtable(hashtable * self, PyObject *args)
 	char * index;
 	char * value;
 	printf("We are in AddValueToHashtable\n");
+	PyArg_ParseTuple(args, "ss",&index, &value);
 	if (! PyArg_ParseTuple(args, "ss",&index, &value))
 		return -1;
 	hashvalue = GetStringHash(index, self->size);
@@ -158,7 +135,7 @@ char * GetValueFromEntry(char * index, list * basket)
 	list * currEntry = basket;
 	while (currEntry!=NULL)
 	{
-		if(strcmp(index,currEntry->index)) /* If indexes are equal */
+		if(strcmp(index,currEntry->index)) /* If indices are equal */
 			return currEntry->value;
 		currEntry=currEntry->next;
 	}
@@ -182,6 +159,7 @@ PyObject * ReturnAll(hashtable * self)
 {
 	int nBasket;
 	list * currEntry;
+	printf("blebleble");
 	PyObject * output = PyList_New(0);
 	for(nBasket=0;nBasket < self->size; nBasket++)
 	{
@@ -196,16 +174,13 @@ PyObject * ReturnAll(hashtable * self)
 }
 
 static PyMethodDef hashtable_methods[] = {
-    {"returnall", (PyCFunction)ReturnAll,  METH_VARARGS,
-     "Return the name, combining the first and last name"
-    },
     {"append", (PyCFunction)AddValueToHashtable, METH_VARARGS, 
     "Add the value with index to Hash Table"
     },
     {"get", (PyCFunction)GetValue, METH_VARARGS, 
     "Get the value corresponding to index from Hash Table"
     },
-    {"getAll", (PyCFunction)ReturnAll, METH_NOARGS, 
+    {"getAll", (PyCFunction)ReturnAll, METH_VARARGS, 
     "Get all the value with corresponding indices from Hash Table"
     },
     {NULL}  /* Sentinel */
@@ -215,7 +190,7 @@ static PyTypeObject HashTableType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "hashtable.HashTable",             /* tp_name */
     sizeof(hashtable),             /* tp_basicsize */
-    0,                         /* tp_itemsize */
+    sizeof(list),                         /* tp_itemsize */
     (destructor)DestroyHashtable, /* tp_dealloc */
     0,                         /* tp_print */
     0,                         /* tp_getattr */
@@ -231,7 +206,7 @@ static PyTypeObject HashTableType = {
     0,                         /* tp_getattro */
     0,                         /* tp_setattro */
     0,                         /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,         /* tp_flags */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "Noddy objects",           /* tp_doc */
     0,                         /* tp_traverse */
     0,                         /* tp_clear */
@@ -239,23 +214,23 @@ static PyTypeObject HashTableType = {
     0,                         /* tp_weaklistoffset */
     0,                         /* tp_iter */
     0,                         /* tp_iternext */
-    hashtable_methods,             /* tp_methods */
-    HashTable_members,             /* tp_members */
+    hashtable_methods,         /* tp_methods */
+    HashTable_members,         /* tp_members */
     0,                         /* tp_getset */
     0,                         /* tp_base */
     0,                         /* tp_dict */
     0,                         /* tp_descr_get */
     0,                         /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    0,      /* tp_init */
+    0, 				      /* tp_init */
     0,                         /* tp_alloc */
     HashTable_new,             /* tp_new */
 };
 
 static PyModuleDef hashtablemodule = {
     PyModuleDef_HEAD_INIT,
-    "noddy2",
-    "Example module that creates an extension type.",
+    "hashtable",
+    "Module that adds hashtable variable.",
     -1,
     NULL, NULL, NULL, NULL, NULL
 };
