@@ -77,7 +77,6 @@ HashTable_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 		self->size = size;
 		printf("%i\n",self->size);
 	}
-	printf("DONE Creating new HashTable\n");
 	return (PyObject *)self;	
 }
 
