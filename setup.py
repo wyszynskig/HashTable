@@ -1,3 +1,3 @@
 from distutils.core import setup, Extension
-setup(name="hashtable", version="0.2",
-      ext_modules=[Extension("hashtable", ["hashtable-python.c"])])
+setup(name='helloworld', version='1.0',  \
+      ext_modules=[Extension('helloworld', ['hello.c'])])
